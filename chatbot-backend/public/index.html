@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tutor de Filosofía</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --bot: #e8f1ff;
+      --user: #d8ffe1;
+      --brand: #4a7cff;
+      --brand2: #345dcc;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', Arial;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .app {
+      width: min(900px, 95vw);
+      height: 85vh;
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, .12);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .messages {
+      flex: 1;
+      overflow: auto;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #f7f9ff;
+    }
+
+    .msg {
+      max-width: 78%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      line-height: 1.35;
+      animation: fadeIn .25s ease-out;
+      word-break: break-word;
+    }
+
+    .bot {
+      background: var(--bot);
+      align-self: flex-start
+    }
+
+    .user {
+      background: var(--user);
+      align-self: flex-end;
+      text-align: right
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .controls {
+      padding: 12px;
+      display: flex;
+      gap: 10px;
+      border-top: 1px solid #e6eaf0;
+      background: #fff;
+    }
+
+    #input {
+      flex: 1;
+      padding: 12px 14px;
+      border: 1px solid #cfd6e4;
+      border-radius: 18px;
+      outline: none;
+      font-size: 15px;
+    }
+
+    button {
+      border: none;
+      border-radius: 18px;
+      padding: 10px 14px;
+      background: var(--brand);
+      color: #fff;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    button:hover {
+      background: var(--brand2)
+    }
+
+    .btn-secondary {
+      background: #94a3b8
+    }
+
+    .btn-secondary:hover {
+      background: #64748b
+    }
+
+    /* estilos para las opciones del quiz */
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .quiz-btn {
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #cfd6e4;
+      background: #030303a8;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .quiz-btn:hover {
+      background: #093ab8;
+    }
+
+
+    @media (max-width:600px) {
+      .app {
+        height: 92vh
+      }
+
+      .msg {
+        max-width: 86%
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div id="messages" class="messages"></div>
+    <div class="controls">
+      <input id="input" type="text" placeholder="Escribe tu mensaje..." />
+      <button id="send">Enviar</button>
+      <button id="clear" class="btn-secondary">Limpiar</button>
+      <button id="quiz">Quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // ---------- Estado ----------
+    let PHILOSOPHERS = {};      // mapa: nombre real -> info (string u objeto)
+    let INDEX = {};             // mapa: nombre normalizado -> nombre real
+    let screenCleared = true;   // para exigir limpiar antes del quiz
+    let quizMode = false;       // estamos en quiz?
+    let quizData = [];          // preguntas cargadas
+    let quizIndex = 0;          // pregunta actual
+
+    // ---------- Utilidades ----------
+    function normalize(s) {
+      return (s || "")
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // quita tildes
+        .replace(/[^\w\s]/g, "") // quita signos/puntuación
+        .trim();
+    }
+    function addMsg(text, who = "bot", asHTML = false) {
+      const wrap = document.getElementById("messages");
+      const div = document.createElement("div");
+      div.className = `msg ${who}`;
+      if (asHTML) div.innerHTML = text; else div.textContent = text;
+      wrap.appendChild(div);
+      wrap.scrollTop = wrap.scrollHeight;
+      screenCleared = false;
+    }
+    function formatInfo(name, info) {
+      if (typeof info === "string") return `<strong>${name}</strong><br>${info}`;
+      if (info && typeof info === "object") {
+        let html = `<strong>${name}</strong>`;
+        for (const [k, v] of Object.entries(info)) {
+          html += `<div><strong>${k}:</strong> ${v}</div>`;
+        }
+        return html;
+      }
+      return `<strong>${name}</strong>`;
+    }
+
+    const BACKEND_URL = "http://localhost:3000"; // Cambia a tu URL backend en producción
+
+    fetch(`${BACKEND_URL}/filosofos`)
+      .then(r => r.json())
+      .then(json => {
+        PHILOSOPHERS = (json && typeof json === "object" && json.filosofos) ? json.filosofos : json;
+        if (!PHILOSOPHERS || typeof PHILOSOPHERS !== "object") {
+          addMsg("⚠️ No pude leer filósofos desde el backend.", "bot");
+          return;
+        }
+        Object.keys(PHILOSOPHERS).forEach(realName => {
+          INDEX[normalize(realName)] = realName;
+        });
+        const list = Object.keys(PHILOSOPHERS).join(", ");
+        addMsg(`👋 Bienvenido al tutor de filosofía.<br>Pídeme un autor (ej. Sócrates) o escribe <em>ayuda</em> para ver la lista.<br><small>Autores: ${list}</small>`, "bot", true);
+      })
+      .catch(e => addMsg("⚠️ Error cargando filósofos desde backend.", "bot"));
+
+    fetch(`${BACKEND_URL}/quiz`)
+      .then(r => r.json())
+      .then(j => {
+        if (j && Array.isArray(j.quiz)) quizData = j.quiz;
+      })
+      .catch(e => {
+        console.warn("No se pudo cargar quiz desde backend:", e);
+      });
+
+    // ---------- Lógica de conversación ----------
+    const greetings = new Set(["hola", "buenas", "hey", "hello", "hi"]);
+    const goodbyes = new Set(["adios", "adiós", "chao", "chau", "hasta luego", "nos vemos"]);
+
+    function handleSend() {
+      const inp = document.getElementById("input");
+      const raw = inp.value;
+      if (!raw || !raw.trim()) return;
+      addMsg(raw, "user");
+      inp.value = "";
+
+      const text = normalize(raw);
+
+      // Si estamos en quiz, tratamos la entrada como respuesta (permite teclear respuesta)
+      if (quizMode) {
+        answerQuiz(raw, false); // false => ya mostramos el mensaje de usuario arriba
+        return;
+      }
+
+      // Saludos / Despedidas
+      if ([...greetings].some(g => text === normalize(g))) {
+        addMsg("¡Hola! 😊 Escribe el nombre de un filósofo o 'ayuda' para ver la lista.");
+        return;
+      }
+      if ([...goodbyes].some(g => text === normalize(g))) {
+        addMsg("¡Hasta pronto! 👋 Sigue practicando cuando quieras.");
+        return;
+      }
+
+      if (text === "ayuda") {
+        const names = Object.keys(PHILOSOPHERS).join(", ");
+        addMsg("📚 Autores disponibles: " + names);
+        return;
+      }
+
+      if (text === "limpiar") {
+        clearAll();
+        return;
+      }
+
+      if (text === "quiz") {
+        startQuiz();
+        return;
+      }
+
+      // Detección de filósofo (exacta o por inclusión)
+      let key = null;
+      if (INDEX[text]) {
+        key = INDEX[text];
+      } else {
+        const hit = Object.keys(INDEX).find(k => text.includes(k));
+        if (hit) key = INDEX[hit];
+      }
+
+      if (key) {
+        const info = PHILOSOPHERS[key];
+        addMsg(formatInfo(key, info), "bot", true);
+      } else {
+        addMsg("No te entendí 🤔. Escribe 'ayuda' para ver la lista y pregúntame por uno de ellos.");
+      }
+    }
+
+    function clearAll() {
+      document.getElementById("messages").innerHTML = "";
+      screenCleared = true;
+      // dejamos la pantalla limpia sin mensajes adicionales
+    }
+
+    // ---------- QUIZ: funciones integradas ----------
+    function startQuiz() {
+      if (!screenCleared) {
+        addMsg("⚠️ Primero pulsa <strong>Limpiar</strong> y luego inicia el quiz.", "bot", true);
+        return;
+      }
+      if (!quizData || quizData.length === 0) {
+        addMsg("⚠️ No hay preguntas cargadas (quiz.json vacío o no cargado).", "bot", true);
+        return;
+      }
+      quizMode = true;
+      quizIndex = 0;
+      addMsg("🎯 Quiz iniciado. Responde seleccionando una opción o escribiendo la respuesta.", "bot", true);
+      showQuizQuestion();
+    }
+
+    function showQuizQuestion() {
+      // eliminar contenedores de opciones previos (si existen)
+      const prev = document.querySelector(".quiz-options");
+      if (prev && prev.parentNode) prev.parentNode.removeChild(prev);
+
+      if (!quizMode) return;
+      if (quizIndex >= quizData.length) {
+        quizMode = false;
+        addMsg("🎉 ¡Has terminado el quiz! Pulsa Limpiar para empezar de nuevo o vuelve a 'ayuda'.", "bot", true);
+        return;
+      }
+      const q = quizData[quizIndex];
+      addMsg(`❓ ${q.pregunta}`, "bot", false);
+
+      // crear contenedor de botones
+      const container = document.createElement("div");
+      container.className = "quiz-options";
+
+      // ordenar o mostrar opciones tal cual vienen
+      q.opciones.forEach(op => {
+        const b = document.createElement("button");
+        b.className = "quiz-btn";
+        b.textContent = op;
+        b.onclick = () => answerQuiz(op, true); // true: clicked button -> mostrar como user
+        container.appendChild(b);
+      });
+
+      // append container al area de mensajes
+      const wrap = document.getElementById("messages");
+      wrap.appendChild(container);
+      wrap.scrollTop = wrap.scrollHeight;
+
+      // marcar que la pantalla ya tiene contenido (para requerir limpiar si se desea)
+      screenCleared = false;
+    }
+
+    function answerQuiz(selected, fromButton) {
+      if (!quizMode) return;
+      // si viene de boton, mostramos la selección como user (para simular)
+      if (fromButton) addMsg(selected, "user");
+
+      const q = quizData[quizIndex];
+      const correct = q.respuesta;
+
+      const normSel = normalize(selected);
+      const normCorr = normalize(correct);
+
+      if (normSel === normCorr) {
+        addMsg("✅ Correcto.", "bot");
+      } else {
+        addMsg(`❌ Incorrecto. La respuesta correcta es: ${correct}`, "bot");
+      }
+
+      // quitar contenedor de botones actual (si existe)
+      const prev = document.querySelector(".quiz-options");
+      if (prev && prev.parentNode) prev.parentNode.removeChild(prev);
+
+      quizIndex++;
+      // avanzar a la siguiente pregunta con pequeño retardo
+      setTimeout(() => {
+        showQuizQuestion();
+      }, 700);
+    }
+
+    // ---------- Eventos ----------
+    document.getElementById("send").addEventListener("click", handleSend);
+    document.getElementById("clear").addEventListener("click", clearAll);
+    document.getElementById("quiz").addEventListener("click", startQuiz);
+    document.getElementById("input").addEventListener("keydown", e => {
+      if (e.key === "Enter") handleSend();
+    });
+  </script>
+</body>
+
+</html>

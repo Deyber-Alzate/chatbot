@@ -1,0 +1,47 @@
+{
+    "filosofos": {
+      "Platón": {
+        "biografia": "Platón (427-347 a.C.) fue un filósofo griego, discípulo de Sócrates y maestro de Aristóteles. Fundó la Academia de Atenas, una de las primeras instituciones de educación superior en el mundo occidental.",
+        "obras": "Entre sus obras más importantes destacan: 'La República', 'El Banquete', 'Fedón' y 'Timeo'.",
+        "conceptos": "Teoría de las Ideas (mundo sensible vs mundo inteligible), el mito de la caverna, el alma tripartita.",
+        "influencia": "Influyó en toda la tradición filosófica occidental, en la política, ética, epistemología y metafísica."
+      },
+      "Aristóteles": {
+        "biografia": "Aristóteles (384-322 a.C.) fue discípulo de Platón y maestro de Alejandro Magno. Fundó el Liceo y es considerado uno de los pensadores más influyentes de la historia.",
+        "obras": "Ética a Nicómaco, Política, Metafísica, Poética, Categorías.",
+        "conceptos": "Lógica formal, teoría de las causas (material, formal, eficiente y final), ética de la virtud.",
+        "influencia": "Su pensamiento dominó la filosofía medieval y fue base del escolasticismo. También fundó bases para la ciencia."
+      },
+      "Sócrates": {
+        "biografia": "Sócrates (470-399 a.C.) fue un filósofo ateniense considerado padre de la filosofía occidental. No dejó escritos, sus ideas se conocen gracias a Platón y Jenofonte.",
+        "obras": "No escribió obras, pero sus ideas aparecen en los diálogos de Platón, como 'Apología de Sócrates'.",
+        "conceptos": "Mayéutica, 'conócete a ti mismo', ética centrada en la virtud y la búsqueda de la verdad.",
+        "influencia": "Sentó las bases de la ética y la filosofía moral. Su método de preguntas sigue vigente en pedagogía y debate."
+      },
+      "Descartes": {
+        "biografia": "René Descartes (1596-1650) fue un filósofo, matemático y científico francés. Es considerado padre de la filosofía moderna.",
+        "obras": "Meditaciones Metafísicas, Discurso del Método, Principios de Filosofía.",
+        "conceptos": "Cogito ergo sum ('pienso, luego existo'), dualismo mente-cuerpo, método de la duda metódica.",
+        "influencia": "Fundador del racionalismo. Su filosofía influyó en la ciencia, la matemática y la epistemología moderna."
+      },
+      "Nietzsche": {
+        "biografia": "Friedrich Nietzsche (1844-1900) fue un filósofo alemán crítico de la moral tradicional, la religión y la cultura occidental.",
+        "obras": "Así habló Zaratustra, La genealogía de la moral, El anticristo, Más allá del bien y del mal.",
+        "conceptos": "Voluntad de poder, eterno retorno, superhombre (Übermensch), 'Dios ha muerto'.",
+        "influencia": "Influyó en el existencialismo, el postestructuralismo, la psicología y la crítica cultural."
+      },
+      "Kant": {
+        "biografia": "Immanuel Kant (1724-1804) fue un filósofo alemán de la Ilustración. Su obra buscó sintetizar racionalismo y empirismo.",
+        "obras": "Crítica de la razón pura, Crítica de la razón práctica, Crítica del juicio.",
+        "conceptos": "Imperativo categórico, idealismo trascendental, autonomía moral.",
+        "influencia": "Revolucionó la filosofía moderna, influyó en ética, metafísica, estética y teoría del conocimiento."
+      },
+      "María Zambrano": {
+        "biografia": "María Zambrano (1904-1991) fue una filósofa y ensayista española, discípula de Ortega y Gasset. Exiliada por la Guerra Civil Española, desarrolló gran parte de su obra en Latinoamérica y Europa.",
+        "obras": "Horizonte del liberalismo, Persona y democracia, Filosofía y poesía, Claros del bosque.",
+        "conceptos": "Razón poética, filosofía como búsqueda vital, unión entre filosofía y literatura.",
+        "influencia": "Premio Cervantes en 1988. Su obra marcó la filosofía contemporánea en lengua española y el pensamiento humanista."
+      }
+    }
+  }
+  

@@ -1,0 +1,40 @@
+{
+    "quiz": [
+      {
+        "pregunta": "¿Quién fue discípulo de Sócrates y maestro de Aristóteles?",
+        "opciones": ["Kant", "Nietzsche", "Platón", "María Zambrano"],
+        "respuesta": "Platón"
+      },
+      {
+        "pregunta": "¿Cuál de estos filósofos escribió 'La República'?",
+        "opciones": ["Sócrates", "Platón", "Aristóteles", "Nietzsche"],
+        "respuesta": "Platón"
+      },
+      {
+        "pregunta": "¿Qué filósofo es considerado el padre de la lógica formal?",
+        "opciones": ["Kant", "Aristóteles", "Platón", "Nietzsche"],
+        "respuesta": "Aristóteles"
+      },
+      {
+        "pregunta": "¿Quién planteó la famosa frase 'Sólo sé que nada sé'?",
+        "opciones": ["Sócrates", "Aristóteles", "Kant", "María Zambrano"],
+        "respuesta": "Sócrates"
+      },
+      {
+        "pregunta": "¿Qué filósofo propuso la idea del imperativo categórico?",
+        "opciones": ["Nietzsche", "Aristóteles", "Kant", "Sócrates"],
+        "respuesta": "Kant"
+      },
+      {
+        "pregunta": "¿Qué filósofo habló del eterno retorno y el superhombre?",
+        "opciones": ["Platón", "Nietzsche", "Aristóteles", "Kant"],
+        "respuesta": "Nietzsche"
+      },
+      {
+        "pregunta": "¿Quién fue la filósofa que defendió la razón poética como forma de conocimiento?",
+        "opciones": ["María Zambrano", "Simone de Beauvoir", "Hannah Arendt", "Hipatia de Alejandría"],
+        "respuesta": "María Zambrano"
+      }
+    ]
+  }
+  

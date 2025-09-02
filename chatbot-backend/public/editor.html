@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Editor Chatbot Filosofía</title>
+<style>
+  /* Copia aquí el CSS de tu index.html para mantener estilo idéntico */
+  /* Ejemplo básico, ajusta según tu CSS original */
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f4ff;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  h1, h2 {
+    color: #4a7cff;
+  }
+  button {
+    background-color: #4a7cff;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    margin: 5px 0;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  button:hover {
+    background-color: #345dcc;
+  }
+  input[type=text], textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 4px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1em;
+  }
+  label {
+    font-weight: bold;
+  }
+  .flex-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .flex-col {
+    flex: 1 1 400px;
+  }
+  .list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    background: white;
+    border-radius: 5px;
+  }
+  .list-item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+  }
+  .list-item:hover {
+    background-color: #d0e0ff;
+  }
+  .list-item.selected {
+    background-color: #4a7cff;
+    color: white;
+  }
+  #status {
+    margin-top: 15px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<h1>Editor de Contenido - Chatbot Filosofía</h1>
+
+<section>
+  <h2>Filósofos</h2>
+  <div class="flex-row">
+    <div class="flex-col">
+      <button id="btnNuevoFilosofo">Nuevo Filósofo</button>
+      <div id="listaFilosofos" class="list"></div>
+      <button id="btnEliminarFilosofo" disabled>Eliminar Filósofo</button>
+    </div>
+    <div class="flex-col">
+      <label for="inputNombre">Nombre</label>
+      <input type="text" id="inputNombre" placeholder="Nombre del filósofo" />
+
+      <label for="inputBiografia">Biografía</label>
+      <textarea id="inputBiografia" rows="3" placeholder="Biografía"></textarea>
+
+      <label for="inputObras">Obras</label>
+      <textarea id="inputObras" rows="2" placeholder="Obras"></textarea>
+
+      <label for="inputConceptos">Conceptos</label>
+      <textarea id="inputConceptos" rows="2" placeholder="Conceptos"></textarea>
+
+      <label for="inputInfluencia">Influencia</label>
+      <textarea id="inputInfluencia" rows="2" placeholder="Influencia"></textarea>
+
+      <button id="btnGuardarFilosofo" disabled>Guardar Filósofo</button>
+    </div>
+  </div>
+</section>
+
+<hr style="margin: 40px 0;" />
+
+<section>
+  <h2>Preguntas del Quiz</h2>
+  <div class="flex-row">
+    <div class="flex-col">
+      <button id="btnNuevaPregunta">Nueva Pregunta</button>
+      <div id="listaPreguntas" class="list"></div>
+      <button id="btnEliminarPregunta" disabled>Eliminar Pregunta</button>
+    </div>
+    <div class="flex-col">
+      <label for="inputPregunta">Pregunta</label>
+      <textarea id="inputPregunta" rows="3" placeholder="Pregunta"></textarea>
+
+      <label for="inputOpciones">Opciones (una por línea)</label>
+      <textarea id="inputOpciones" rows="4" placeholder="Escribe cada opción en una línea"></textarea>
+
+      <label for="inputRespuesta">Respuesta Correcta</label>
+      <input type="text" id="inputRespuesta" placeholder="Respuesta correcta exacta" />
+
+      <button id="btnGuardarPregunta" disabled>Guardar Pregunta</button>
+    </div>
+  </div>
+</section>
+
+<button id="btnGuardarTodo" style="margin-top: 30px; background: #28a745;">Guardar Todo en el Servidor</button>
+<div id="status"></div>
+
+<script>
+  const BACKEND_URL = "http://localhost:3000"; // Cambia a URL backend en producción
+
+  // Estado local
+  let filosofos = {};
+  let quiz = [];
+
+  // Elementos DOM filósofos
+  const listaFilosofos = document.getElementById('listaFilosofos');
+  const btnNuevoFilosofo = document.getElementById('btnNuevoFilosofo');
+  const btnEliminarFilosofo = document.getElementById('btnEliminarFilosofo');
+  const btnGuardarFilosofo = document.getElementById('btnGuardarFilosofo');
+  const inputNombre = document.getElementById('inputNombre');
+  const inputBiografia = document.getElementById('inputBiografia');
+  const inputObras = document.getElementById('inputObras');
+  const inputConceptos = document.getElementById('inputConceptos');
+  const inputInfluencia = document.getElementById('inputInfluencia');
+
+  // Elementos DOM quiz
+  const listaPreguntas = document.getElementById('listaPreguntas');
+  const btnNuevaPregunta = document.getElementById('btnNuevaPregunta');
+  const btnEliminarPregunta = document.getElementById('btnEliminarPregunta');
+  const btnGuardarPregunta = document.getElementById('btnGuardarPregunta');
+  const inputPregunta = document.getElementById('inputPregunta');
+  const inputOpciones = document.getElementById('inputOpciones');
+  const inputRespuesta = document.getElementById('inputRespuesta');
+
+  const btnGuardarTodo = document.getElementById('btnGuardarTodo');
+  const statusDiv = document.getElementById('status');
+
+  // Variables para selección
+  let filosofoSeleccionado = null;
+  let preguntaSeleccionada = null;
+
+  // --- Funciones para filósofos ---
+  function renderFilosofos() {
+    listaFilosofos.innerHTML = '';
+    Object.keys(filosofos).forEach(nombre => {
+      const div = document.createElement('div');
+      div.textContent = nombre;
+      div.className = 'list-item' + (filosofoSeleccionado === nombre ? ' selected' : '');
+      div.onclick = () => {
+        filosofoSeleccionado = nombre;
+        renderFilosofos();
+        cargarFilosofo(nombre);
+        btnEliminarFilosofo.disabled = false;
+        btnGuardarFilosofo.disabled = false;
+      };
+      listaFilosofos.appendChild(div);
+    });
+  }
+
+  function cargarFilosofo(nombre) {
+    const f = filosofos[nombre];
+    inputNombre.value = nombre;
+    inputBiografia.value = f.biografia || '';
+    inputObras.value = f.obras || '';
+    inputConceptos.value = f.conceptos || '';
+    inputInfluencia.value = f.influencia || '';
+  }
+
+  function limpiarFilosofo() {
+    filosofoSeleccionado = null;
+    inputNombre.value = '';
+    inputBiografia.value = '';
+    inputObras.value = '';
+    inputConceptos.value = '';
+    inputInfluencia.value = '';
+    btnEliminarFilosofo.disabled = true;
+    btnGuardarFilosofo.disabled = true;
+    renderFilosofos();
+  }
+
+  btnNuevoFilosofo.onclick = () => {
+    limpiarFilosofo();
+    btnGuardarFilosofo.disabled = false;
+  };
+
+  btnGuardarFilosofo.onclick = () => {
+    const nombre = inputNombre.value.trim();
+    if (!nombre) {
+      alert('El nombre es obligatorio');
+      return;
+    }
+    filosofos[nombre] = {
+      biografia: inputBiografia.value.trim(),
+      obras: inputObras.value.trim(),
+      conceptos: inputConceptos.value.trim(),
+      influencia: inputInfluencia.value.trim()
+    };
+    filosofoSeleccionado = nombre;
+    renderFilosofos();
+    statusDiv.textContent = 'Filósofo guardado localmente. Recuerda guardar todo en el servidor.';
+  };
+
+  btnEliminarFilosofo.onclick = () => {
+    if (filosofoSeleccionado && confirm(`¿Eliminar filósofo "${filosofoSeleccionado}"?`)) {
+      delete filosofos[filosofoSeleccionado];
+      limpiarFilosofo();
+      statusDiv.textContent = 'Filósofo eliminado localmente. Recuerda guardar todo en el servidor.';
+    }
+  };
+
+  // --- Funciones para quiz ---
+  function renderPreguntas() {
+    listaPreguntas.innerHTML = '';
+    quiz.forEach((q, i) => {
+      const div = document.createElement('div');
+      div.textContent = q.pregunta;
+      div.className = 'list-item' + (preguntaSeleccionada === i ? ' selected' : '');
+      div.onclick = () => {
+        preguntaSeleccionada = i;
+        renderPreguntas();
+        cargarPregunta(i);
+        btnEliminarPregunta.disabled = false;
+        btnGuardarPregunta.disabled = false;
+      };
+      listaPreguntas.appendChild(div);
+    });
+  }
+
+  function cargarPregunta(i) {
+    const q = quiz[i];
+    inputPregunta.value = q.pregunta || '';
+    inputOpciones.value = (q.opciones || []).join('\n');
+    inputRespuesta.value = q.respuesta || '';
+  }
+
+  function limpiarPregunta() {
+    preguntaSeleccionada = null;
+    inputPregunta.value = '';
+    inputOpciones.value = '';
+    inputRespuesta.value = '';
+    btnEliminarPregunta.disabled = true;
+    btnGuardarPregunta.disabled = true;
+    renderPreguntas();
+  }
+
+  btnNuevaPregunta.onclick = () => {
+    limpiarPregunta();
+    btnGuardarPregunta.disabled = false;
+  };
+
+  btnGuardarPregunta.onclick = () => {
+    const pregunta = inputPregunta.value.trim();
+    const opciones = inputOpciones.value.split('\n').map(s => s.trim()).filter(s => s);
+    const respuesta = inputRespuesta.value.trim();
+    if (!pregunta) {
+      alert('La pregunta es obligatoria');
+      return;
+    }
+    if (opciones.length < 2) {
+      alert('Debe haber al menos dos opciones');
+      return;
+    }
+    if (!respuesta) {
+      alert('La respuesta correcta es obligatoria');
+      return;
+    }
+    if (!opciones.includes(respuesta)) {
+      alert('La respuesta correcta debe estar entre las opciones');
+      return;
+    }
+    const nuevaPregunta = { pregunta, opciones, respuesta };
+    if (preguntaSeleccionada !== null) {
+      quiz[preguntaSeleccionada] = nuevaPregunta;
+    } else {
+      quiz.push(nuevaPregunta);
+      preguntaSeleccionada = quiz.length - 1;
+    }
+    renderPreguntas();
+    statusDiv.textContent = 'Pregunta guardada localmente. Recuerda guardar todo en el servidor.';
+  };
+
+  btnEliminarPregunta.onclick = () => {
+    if (preguntaSeleccionada !== null && confirm('¿Eliminar esta pregunta?')) {
+      quiz.splice(preguntaSeleccionada, 1);
+      limpiarPregunta();
+      statusDiv.textContent = 'Pregunta eliminada localmente. Recuerda guardar todo en el servidor.';
+    }
+  };
+
+  // --- Guardar todo en backend ---
+  btnGuardarTodo.onclick = () => {
+    statusDiv.textContent = 'Guardando en servidor...';
+    Promise.all([
+      fetch(`${BACKEND_URL}/filosofos`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(filosofos)
+      }),
+      fetch(`${BACKEND_URL}/quiz`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(quiz)
+      })
+    ]).then(responses => {
+      if (responses.every(r => r.ok)) {
+        statusDiv.textContent = 'Datos guardados correctamente en el servidor.';
+      } else {
+        statusDiv.textContent = 'Error guardando datos en el servidor.';
+      }
+    }).catch(() => {
+      statusDiv.textContent = 'Error guardando datos en el servidor.';
+    });
+  };
+
+  // --- Cargar datos iniciales ---
+  function cargarDatos() {
+    fetch(`${BACKEND_URL}/filosofos`)
+      .then(r => r.json())
+      .then(json => {
+        filosofos = json.filosofos || json;
+        renderFilosofos();
+      })
+      .catch(() => {
+        statusDiv.textContent = 'Error cargando filósofos desde servidor.';
+      });
+
+    fetch(`${BACKEND_URL}/quiz`)
+      .then(r => r.json())
+      .then(json => {
+        quiz = json.quiz || json;
+        renderPreguntas();
+      })
+      .catch(() => {
+        statusDiv.textContent = 'Error cargando quiz desde servidor.';
+      });
+  }
+
+  cargarDatos();
+</script>
+
+</body>
+</html>
