@@ -206,7 +206,7 @@
 
     const BACKEND_URL = ""; // Cambia a tu URL backend en producción
 
-    fetch(`${BACKEND_URL}/filosofos`)
+    fetch(`/filosofos`)
       .then(r => r.json())
       .then(json => {
         PHILOSOPHERS = (json && typeof json === "object" && json.filosofos) ? json.filosofos : json;
@@ -222,7 +222,7 @@
       })
       .catch(e => addMsg("⚠️ Error cargando filósofos desde backend.", "bot"));
 
-    fetch(`${BACKEND_URL}/quiz`)
+    fetch(`/quiz`)
       .then(r => r.json())
       .then(j => {
         if (j && Array.isArray(j.quiz)) quizData = j.quiz;
@@ -391,5 +391,6 @@
 
 
 </html>
+
 
 
