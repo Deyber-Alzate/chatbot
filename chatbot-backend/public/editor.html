@@ -17,6 +17,23 @@
     margin-left: auto;
     margin-right: auto;
   }
+
+   nav {
+      background: #333;
+      padding: 10px;
+    }
+
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin-right: 15px;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+  
   h1, h2 {
     color: #4a7cff;
   }
@@ -139,9 +156,13 @@
 
 <button id="btnGuardarTodo" style="margin-top: 30px; background: #28a745;">Guardar Todo en el Servidor</button>
 <div id="status"></div>
+  <nav>
+    <a href="index.html">Chatbot</a>
+    <a href="editor.html">Editor</a>
+  </nav>
 
 <script>
- const BACKEND_URL = "https://chatbot-educativo-x3nn.onrender.com/"; // Cambia a URL backend en producción
+ const BACKEND_URL = ""; // Cambia a URL backend en producción
 
   // Estado local
   let filosofos = {};
@@ -326,12 +347,12 @@
   btnGuardarTodo.onclick = () => {
     statusDiv.textContent = 'Guardando en servidor...';
     Promise.all([
-      fetch(`${BACKEND_URL}/filosofos`, {
+      fetch(`/filosofos`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(filosofos)
       }),
-      fetch(`${BACKEND_URL}/quiz`, {
+      fetch(`/quiz`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(quiz)
@@ -349,7 +370,7 @@
 
   // --- Cargar datos iniciales ---
   function cargarDatos() {
-    fetch(`${BACKEND_URL}/filosofos`)
+    fetch(`/filosofos`)
       .then(r => r.json())
       .then(json => {
         filosofos = json.filosofos || json;
@@ -359,7 +380,7 @@
         statusDiv.textContent = 'Error cargando filósofos desde servidor.';
       });
 
-    fetch(`${BACKEND_URL}/quiz`)
+    fetch(`/quiz`)
       .then(r => r.json())
       .then(json => {
         quiz = json.quiz || json;
@@ -376,4 +397,5 @@
 </body>
 
 </html>
+
 
